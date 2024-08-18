@@ -4,57 +4,38 @@ import cv2
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QSlider
 from PySide6.QtGui import QPixmap, QImage, QIcon
 from PySide6.QtCore import Qt, QUrl
-from PySide6.QtMultimediaWidgets import QVideoWidget
-from PySide6.QtMultimedia import QMediaPlayer
 
+from segment_anything_2_ui.configs.config import UiConfig
+from segment_anything_2_ui.ui.media_player import MediaPlayer
+from segment_anything_2_ui.ui.settings_widget import SettingsWidget
 
 class PyVideoPlayer(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-
-        self.mediaPlayer = QMediaPlayer()
-        videoWidget = QVideoWidget()
+        self.setWindowTitle("Segment Anything 2 UI")
+        self.move(100, 100)
+        self.config = UiConfig()
+        self.mediaPlayer = MediaPlayer(cv2.VideoCapture("video.avi"), config=self.config)
 
         self.thumbnail_widget = QWidget()
         self.thumbnail = QHBoxLayout()
         self.thumbnail_widget.setLayout(self.thumbnail)
-
-        self.playButton = QPushButton()
-        self.playButton.setIcon(QIcon("segment_anything_2_ui/assets/play.svg"))
-        self.playButton.setEnabled(False)
-        self.playButton.clicked.connect(self.play)
-
-        self.positionSlider = QSlider(orientation=Qt.Orientation.Horizontal)
-        self.positionSlider.setRange(0, 0)
-        self.positionSlider.sliderMoved.connect(self.setPosition)
-
+        self.settings_widget = SettingsWidget()
         self.timeLabel = QLabel()
         self.timeLabel.setStyleSheet(
             "color: #4f5b6e; font-family: 'Roboto'; font-size: 9pt; font-weight: bold;"
         )
         # Set up the layout
-        videoLayout = QVBoxLayout()
-        videoLayout.addWidget(videoWidget, stretch=1)
-
-        controlLayout = QHBoxLayout()
-        controlLayout.addWidget(self.playButton)
-        controlLayout.addWidget(self.timeLabel)
 
         layout = QVBoxLayout()
-        layout.addLayout(videoLayout)
-        layout.addWidget(self.positionSlider)
+        layout.addWidget(self.mediaPlayer)
         layout.addWidget(self.thumbnail_widget)
-        layout.addLayout(controlLayout)
 
+        hlayout = QHBoxLayout()
+        hlayout.addWidget(self.settings_widget)
         layout.setContentsMargins(10, 0, 10, 0)
-
-        self.setLayout(layout)
-
-        self.mediaPlayer.setVideoOutput(videoWidget)
-        self.mediaPlayer.playbackStateChanged.connect(self.mediaStateChanged)
-        self.mediaPlayer.positionChanged.connect(self.positionChanged)
-        self.mediaPlayer.durationChanged.connect(self.durationChanged)
-        self.mediaPlayer.errorOccurred.connect(self.handleError)
+        hlayout.addLayout(layout)
+        self.setLayout(hlayout)
 
     def setMedia(self, fileName):
         self.generate_thumbnail_previews(fileName)
@@ -87,27 +68,6 @@ class PyVideoPlayer(QWidget):
             label.setPixmap(thumbnail.scaled(100, 100, Qt.KeepAspectRatio))
             self.thumbnail.addWidget(label)
 
-    def play(self):
-        if self.mediaPlayer.playbackState() == QMediaPlayer.PlaybackState.PlayingState:
-            self.mediaPlayer.pause()
-        else:
-            self.mediaPlayer.play()
-
-    def mediaStateChanged(self, state):
-        if state == QMediaPlayer.PlaybackState.PlayingState:
-            self.playButton.setIcon(QIcon("gui/images/svg_icons/icon_pause.svg"))
-        else:
-            self.playButton.setIcon(QIcon("gui/images/svg_icons/icon_play.svg"))
-
-    def positionChanged(self, position):
-        self.positionSlider.setValue(position)
-        self.timeLabel.setText(
-            f"{position // 60000:02}:{(position // 1000) % 60:02} / {self.mediaPlayer.duration() // 60000:02}:{(self.mediaPlayer.duration() // 1000) % 60:02}"
-        )
-        
-    def durationChanged(self, duration):
-        self.positionSlider.setRange(0, duration)
-
     def setPosition(self, position):
         self.mediaPlayer.setPosition(position)
 
@@ -121,7 +81,6 @@ if __name__ == "__main__":
         app = QApplication(sys.argv)
         ex = PyVideoPlayer()
         ex.resize(720, 480)
-        ex.setMedia("video.avi")  # Replace with your video file path
         ex.show()
         sys.exit(app.exec())
     except KeyboardInterrupt:
