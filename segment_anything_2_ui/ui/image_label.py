@@ -34,7 +34,9 @@ class MaskIdPicker:
 class ImageLabel(QtWidgets.QLabel):
 
     def __init__(self, parent=None, config: UiConfig | None = None):
-        super().__init__(parent)
+        super().__init__()
+        self.parent = parent
+        self.video_predictor = self.parent.parent.video_predictor
         self.positive_points = []
         self.negative_points = []
         self.bounding_box = None
@@ -47,6 +49,10 @@ class ImageLabel(QtWidgets.QLabel):
         self._zoom_factor = 1.0
         self._zoom_bounding_box: BoundingBox | None = None
         self.config = config
+    
+    @property
+    def frame_idx(self):
+        return self.parent.current_frame
 
     def paintEvent(self, paint_event):
         print("Painting event")
@@ -119,7 +125,7 @@ class ImageLabel(QtWidgets.QLabel):
         self.update()
 
     def _move_update(self, temporary_point_negative, temporary_point_positive):
-        # TODO: add point prediction on single image
+        # TODO: add new object id
         pass
 
     def mouseReleaseEvent(self, cursor_event):
@@ -129,6 +135,13 @@ class ImageLabel(QtWidgets.QLabel):
                 print(self.size())
             elif cursor_event.button() == QtCore.Qt.RightButton:
                 self.negative_points.append(cursor_event.pos())
+            out_obj_ids, out_mask_logits = self.video_predictor.add_new_points_box(
+                frame_idx=self.frame_idx,
+                object_idx=0,
+                points=np.array([[cursor_event.pos().x(), cursor_event.pos().y()]]),
+                labels=np.array([1]) if cursor_event.button() == QtCore.Qt.LeftButton else np.array([0])
+            )
+            self.visualize_mask(out_obj_ids, out_mask_logits)
             # self.chosen_points.append(self.mapFromGlobal(QtGui.QCursor.pos()))
         elif self._paint_type in [PaintType.BOX, PaintType.ZOOM_PICKER]:
             if cursor_event.button() == QtCore.Qt.LeftButton:
@@ -161,6 +174,9 @@ class ImageLabel(QtWidgets.QLabel):
             self.parent().annotator.masks.mask_id = -1
             self.parent().annotator.last_mask = None
             self.parent().update(self.parent().annotator.merge_image_visualization())
+            
+    def visualize_mask(self, out_obj_ids, out_mask_logits):
+        pass
 
     def _get_scale(self):
         return self.config.image_size[0] / self.size().width(), self.config.image_size[1] / self.size().height()

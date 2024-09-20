@@ -14,7 +14,7 @@ class MediaPlayer(QWidget):
         super().__init__()
         self.config = config
         self.video = video
-        self.image_label = ImageLabel(config=self.config)
+        self.image_label = ImageLabel(parent=self, config=self.config)
         self.video_length = int(self.video.get(cv2.CAP_PROP_FRAME_COUNT))
         self.fps = self.video.get(cv2.CAP_PROP_FPS)
         self.current_frame = 0

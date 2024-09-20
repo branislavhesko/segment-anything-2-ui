@@ -6,6 +6,7 @@ from PySide6.QtGui import QPixmap, QImage, QIcon
 from PySide6.QtCore import Qt, QUrl
 
 from segment_anything_2_ui.configs.config import UiConfig
+from segment_anything_2_ui.engine.video_prediction import VideoPrediction
 from segment_anything_2_ui.ui.media_player import MediaPlayer
 from segment_anything_2_ui.ui.settings_widget import SettingsWidget
 
@@ -30,7 +31,7 @@ class PyVideoPlayer(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.mediaPlayer)
         layout.addWidget(self.thumbnail_widget)
-
+        self.video_predictor = VideoPrediction(self.config.sam2_checkpoint, self.config.sam2_model_cfg)
         hlayout = QHBoxLayout()
         hlayout.addWidget(self.settings_widget)
         layout.setContentsMargins(10, 0, 10, 0)
@@ -41,6 +42,7 @@ class PyVideoPlayer(QWidget):
         self.generate_thumbnail_previews(fileName)
         self.mediaPlayer.setSource(QUrl.fromLocalFile(fileName))
         self.playButton.setEnabled(True)
+        self.video_predictor.add_video(fileName)
         self.play()
 
     def generate_thumbnail_previews(self, url):

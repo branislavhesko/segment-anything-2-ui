@@ -6,9 +6,6 @@ from omegaconf import OmegaConf
 import numpy as np
 import torch
 
-sam2_checkpoint = "sam2_hiera_small.pt"
-model_cfg = "sam2_hiera_s.yaml"
-
 from segment_anything_2_ui.engine.sam2_video_predictor import SAM2VideoPredictor
 
 
@@ -56,6 +53,7 @@ class VideoPrediction:
         self.predictor = build_sam2_video_predictor(model_cfg, checkpooint_path, device=device)
         self.segmentation_results = {}
         self.inference_state = None
+        self.is_propagated: bool = False
         
     def add_video(self, video_path):
         self.inference_state = self.predictor.init_state(frames=self.load_video(video_path))
@@ -89,6 +87,11 @@ class VideoPrediction:
             box=box,
         )
         return out_obj_ids, out_mask_logits
+    
+    def get_segmentation_results(self, index):
+        if not self.is_propagated:
+            return None
+        return self.segmentation_results[index]
     
     def propagate(self):
         for out_frame_idx, out_obj_ids, out_mask_logits in self.predictor.propagate_in_video(self.inference_state):
