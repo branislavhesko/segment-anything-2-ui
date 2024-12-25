@@ -12,7 +12,7 @@ class SettingsWidget(QWidget):
         self.parent = parent
         self.setWindowTitle("Settings")
         self.setGeometry(100, 100, 300, 200)
-        self.setStyleSheet("background-color: #f0f0f0;")
+        self.setStyleSheet("background-color: #000000;")
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)

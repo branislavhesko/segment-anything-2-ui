@@ -7,3 +7,11 @@ class PaintType(Enum):
     MASK = 2
     POLYGON = 3
     MASK_PICKER = 4
+    ZOOM_PICKER = 5
+
+
+class PredictionResult:
+    def __init__(self, masks, scores, logits):
+        self.masks = masks
+        self.scores = scores
+        self.logits = logits

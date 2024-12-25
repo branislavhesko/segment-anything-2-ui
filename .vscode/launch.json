@@ -14,6 +14,17 @@
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"
             }
+        },
+        {
+            "name": "UI",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/segment_anything_2_ui/ui/sam2_main_window.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
         }
     ]
 }

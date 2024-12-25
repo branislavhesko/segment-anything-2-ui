@@ -10,8 +10,9 @@ from segment_anything_2_ui.ui.image_pixmap import ImagePixmap
 
 class MediaPlayer(QWidget):
 
-    def __init__(self, video: cv2.VideoCapture, config: UiConfig):
+    def __init__(self, parent, video: cv2.VideoCapture, config: UiConfig):
         super().__init__()
+        self.parent = parent
         self.config = config
         self.video = video
         self.image_label = ImageLabel(parent=self, config=self.config)
@@ -34,7 +35,10 @@ class MediaPlayer(QWidget):
         hbox.addWidget(self.play_button)
         self.layout.addLayout(hbox)
         self.setLayout(self.layout)
-        self.move_to_frame(0)
+        if self.video_length > 0:
+            self.move_to_frame(0)
+        else:
+            self.play_button.setEnabled(False)
         
     def on_slider_moved(self):
         self.move_to_frame(self.position_slider.value())
