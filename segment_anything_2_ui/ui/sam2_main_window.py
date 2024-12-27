@@ -42,7 +42,7 @@ class PyVideoPlayer(QWidget):
         self.mediaPlayer = MediaPlayer(self, cv2.VideoCapture(fileName), config=self.config)
         self.mediaPlayer.play_button.setEnabled(True)
         self.video_predictor.add_video(fileName)
-        self.mediaPlayer.play()
+        # self.mediaPlayer.play()
 
     def generate_thumbnail_previews(self, url):
         video_capture = cv2.VideoCapture(url)

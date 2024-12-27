@@ -1,3 +1,4 @@
+import dataclasses
 import logging
 import cv2
 from hydra import compose
@@ -7,6 +8,32 @@ import numpy as np
 import torch
 
 from segment_anything_2_ui.engine.sam2_video_predictor import Sam2VideoPredictorCustom
+
+
+@dataclasses.dataclass
+class SingleFramePrediction:
+    frame_idx: int
+    obj_ids: list[int]
+    mask_logits: np.ndarray
+    points: np.ndarray | None = None
+    labels: np.ndarray | None = None
+    box: np.ndarray | None = None
+    mask: np.ndarray | None = None
+    object_id: int = 0
+    
+    
+class VideoPredictionData:
+    def __init__(self, max_frames: int):
+        self.predictions: list[SingleFramePrediction] = [None] * max_frames
+        self.current_frame_idx: int = 0
+        self.max_frames: int = max_frames
+        
+    def add_prediction(self, prediction: SingleFramePrediction, frame_idx: int):
+        self.predictions[frame_idx] = prediction
+        self.current_frame_idx = frame_idx
+        
+    def get_prediction(self, frame_idx: int) -> SingleFramePrediction | None:
+        return self.predictions[frame_idx]
 
 
 HF_MODEL_ID_TO_FILENAMES = {
@@ -104,12 +131,13 @@ def build_sam2_video_predictor(
 
 class VideoPrediction:
     
-    def __init__(self, model_cfg, checkpoint_path):
+    def __init__(self, model_cfg, checkpoint_path, max_frames: int):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.predictor = build_sam2_video_predictor(model_cfg, checkpoint_path, device=device)
         self.segmentation_results = {}
         self.inference_state = None
         self.is_propagated: bool = False
+        self.video_data = VideoPredictionData(max_frames)
         
     def add_video(self, video_path):
         self.inference_state = self.predictor.init_state(frames=self.load_video(video_path))

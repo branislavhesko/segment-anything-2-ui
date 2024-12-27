@@ -33,6 +33,8 @@ class SettingsWidget(QWidget):
         self.layout.addWidget(self.box_annotation)
         self.layout.addWidget(self.mask_annotation)
         self.layout.addWidget(self.point_annotation)
+        self.layout.addWidget(self.propagate)
+        self.layout.addWidget(self.clear_annotations)
         self.annotation_type = PaintType.POINT
     
     
