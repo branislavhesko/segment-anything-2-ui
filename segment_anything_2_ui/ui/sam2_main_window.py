@@ -16,7 +16,7 @@ class PyVideoPlayer(QWidget):
         self.setWindowTitle("Segment Anything 2 UI")
         self.move(100, 100)
         self.config = UiConfig()
-        self.video_predictor = VideoPrediction(self.config.sam2_model_cfg, self.config.sam2_checkpoint)
+        self.video_predictor = VideoPrediction(self.config.sam2_model_cfg, self.config.sam2_checkpoint, max_frames=100)
         self.thumbnail_widget = QWidget()
         self.thumbnail = QHBoxLayout()
         self.thumbnail_widget.setLayout(self.thumbnail)
@@ -25,6 +25,7 @@ class PyVideoPlayer(QWidget):
         self.timeLabel.setStyleSheet(
             "color: #4f5b6e; font-family: 'Roboto'; font-size: 9pt; font-weight: bold;"
         )
+        self.mediaPlayer: MediaPlayer = None
         # Set up the layout
         self.setMedia("video.avi")
 
@@ -39,7 +40,7 @@ class PyVideoPlayer(QWidget):
 
     def setMedia(self, fileName):
         self.generate_thumbnail_previews(fileName)
-        self.mediaPlayer = MediaPlayer(self, cv2.VideoCapture(fileName), config=self.config)
+        self.mediaPlayer = MediaPlayer(self, cv2.VideoCapture(fileName), prediction_data=self.video_predictor.video_data, config=self.config)
         self.mediaPlayer.play_button.setEnabled(True)
         self.video_predictor.add_video(fileName)
         # self.mediaPlayer.play()

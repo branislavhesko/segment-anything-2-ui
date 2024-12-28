@@ -9,8 +9,49 @@ from PySide6.QtGui import QPainter, QPen
 from PySide6.QtMultimediaWidgets import QVideoWidget
 
 from segment_anything_2_ui.configs.config import UiConfig
+from segment_anything_2_ui.engine.video_prediction import VideoPredictionData, SingleFramePrediction
+from segment_anything_2_ui.ui.image_pixmap import ImagePixmap
 from segment_anything_2_ui.utils.shape import BoundingBox, Polygon
 from segment_anything_2_ui.utils.structures import PaintType
+
+
+COLORS = [
+    (0, 255, 0),
+    (255, 0, 0),
+    (0, 0, 255),
+    (255, 255, 0),
+    (0, 255, 255),
+    (255, 0, 255),
+]
+
+
+def make_visualization_with_mask(frame: np.ndarray, prediction: SingleFramePrediction):
+    mask = prediction.mask > 0.0
+    mask_colored = np.zeros_like(frame)
+    mask_colored[mask] = np.array([255, 0, 0])
+    return cv2.addWeighted(frame, 1.0, mask_colored, 0.2, 0)
+
+
+class VisualizationMode:
+    IMAGE = "IMAGE"
+    IMAGE_WITH_MASK = "IMAGE_WITH_MASK"
+    
+    def __init__(self):
+        self.mode = VisualizationMode.IMAGE
+        
+    def next(self):
+        if self.mode == VisualizationMode.IMAGE:
+            self.mode = VisualizationMode.IMAGE_WITH_MASK
+        else:
+            self.mode = VisualizationMode.IMAGE
+        return self.mode
+    
+    def prev(self):
+        if self.mode == VisualizationMode.IMAGE_WITH_MASK:
+            self.mode = VisualizationMode.IMAGE
+        else:
+            self.mode = VisualizationMode.IMAGE_WITH_MASK
+        return self.mode
 
 
 class MaskIdPicker:
@@ -33,9 +74,12 @@ class MaskIdPicker:
 
 class ImageLabel(QtWidgets.QLabel):
 
-    def __init__(self, parent=None, config: UiConfig | None = None):
+    def __init__(self, parent, prediction_data: VideoPredictionData, config: UiConfig | None = None):
         super().__init__()
         self.parent = parent
+        self.prediction_data = prediction_data
+        self.visualization_mode = VisualizationMode()
+        self.actual_image = np.empty((0, 0, 3))
         self.video_predictor = self.parent.parent.video_predictor
         self.positive_points = []
         self.negative_points = []
@@ -49,6 +93,14 @@ class ImageLabel(QtWidgets.QLabel):
         self._zoom_factor = 1.0
         self._zoom_bounding_box: BoundingBox | None = None
         self.config = config
+        
+    def set_image(self, image):
+        self.actual_image = image
+        self.update_visualization()
+    def update_visualization(self):
+        visualization = self.make_visualization(self.actual_image, self.frame_idx)
+        self.setPixmap(ImagePixmap.fromarray(visualization))
+        self.update()
     
     @property
     def frame_idx(self):
@@ -135,13 +187,14 @@ class ImageLabel(QtWidgets.QLabel):
                 print(self.size())
             elif cursor_event.button() == QtCore.Qt.RightButton:
                 self.negative_points.append(cursor_event.pos())
-            out_obj_ids, out_mask_logits = self.video_predictor.add_new_points_box(
+            self.video_predictor.add_new_points_box(
                 frame_idx=self.frame_idx,
                 object_idx=0,
                 points=np.array([[cursor_event.pos().x(), cursor_event.pos().y()]]),
                 labels=np.array([1]) if cursor_event.button() == QtCore.Qt.LeftButton else np.array([0])
             )
-            self.visualize_mask(out_obj_ids, out_mask_logits)
+            self.update_visualization()
+            
             # self.chosen_points.append(self.mapFromGlobal(QtGui.QCursor.pos()))
         elif self._paint_type in [PaintType.BOX, PaintType.ZOOM_PICKER]:
             if cursor_event.button() == QtCore.Qt.LeftButton:
@@ -175,8 +228,11 @@ class ImageLabel(QtWidgets.QLabel):
             self.parent().annotator.last_mask = None
             self.parent().update(self.parent().annotator.merge_image_visualization())
             
-    def visualize_mask(self, out_obj_ids, out_mask_logits):
-        pass
+    def make_visualization(self, frame: np.ndarray, frame_idx: int):
+        prediction = self.prediction_data.get_prediction(frame_idx)
+        if prediction is not None and self.visualization_mode.mode == VisualizationMode.IMAGE_WITH_MASK:
+            return make_visualization_with_mask(frame, prediction)
+        return frame
 
     def _get_scale(self):
         return self.config.image_size[0] / self.size().width(), self.config.image_size[1] / self.size().height()

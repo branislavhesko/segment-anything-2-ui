@@ -170,7 +170,15 @@ class VideoPrediction:
             labels=labels,
             box=box,
         )
-        return out_obj_ids, out_mask_logits
+        self.video_data.add_prediction(SingleFramePrediction(
+            frame_idx=frame_idx, 
+            obj_ids=out_obj_ids, 
+            mask_logits=out_mask_logits.squeeze().numpy(),
+            points=points,
+            labels=labels,
+            box=box,
+            mask=out_mask_logits.squeeze().numpy()
+        ), frame_idx)
     
     def get_segmentation_results(self, index):
         if not self.is_propagated:

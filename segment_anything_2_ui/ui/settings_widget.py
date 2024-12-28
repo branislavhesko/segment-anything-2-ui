@@ -22,6 +22,7 @@ class SettingsWidget(QWidget):
         self.box_annotation = QPushButton("Box annotation")
         self.mask_annotation = QPushButton("Mask annotation")
         self.point_annotation = QPushButton("Point annotation")
+        self.visualitation_button = QPushButton("Visualize image")
         self.propagate = QPushButton("Propagate")
         self.propagate.setShortcut("F4")
         self.propagate.clicked.connect(self.propagate_clicked)
@@ -30,13 +31,21 @@ class SettingsWidget(QWidget):
         self.mask_annotation.clicked.connect(partial(self.set_annotation_type, PaintType.MASK))
         self.point_annotation.clicked.connect(partial(self.set_annotation_type, PaintType.POINT))
         self.clear_annotations.clicked.connect(self.clear_annotations_clicked)
+        self.visualitation_button.clicked.connect(self.visualitation_clicked)
         self.layout.addWidget(self.box_annotation)
         self.layout.addWidget(self.mask_annotation)
         self.layout.addWidget(self.point_annotation)
+        self.layout.addWidget(self.visualitation_button)
         self.layout.addWidget(self.propagate)
         self.layout.addWidget(self.clear_annotations)
         self.annotation_type = PaintType.POINT
     
+    def visualitation_clicked(self):
+        self.parent.mediaPlayer.image_label.visualization_mode.next()
+        if self.visualitation_button.text() == "Visualize image":
+            self.visualitation_button.setText("Visualize image with mask")
+        else:
+            self.visualitation_button.setText("Visualize image")
     
     def propagate_clicked(self):
         pass
