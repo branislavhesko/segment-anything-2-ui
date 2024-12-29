@@ -48,7 +48,7 @@ class SettingsWidget(QWidget):
             self.visualitation_button.setText("Visualize image")
     
     def propagate_clicked(self):
-        pass
+        self.parent.video_predictor.propagate()
     
     def clear_annotations_clicked(self):
         pass
