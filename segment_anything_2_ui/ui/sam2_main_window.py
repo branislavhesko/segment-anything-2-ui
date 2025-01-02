@@ -16,7 +16,7 @@ class PyVideoPlayer(QWidget):
         self.setWindowTitle("Segment Anything 2 UI")
         self.move(100, 100)
         self.config = UiConfig()
-        self.video_predictor = VideoPrediction(self.config.sam2_model_cfg, self.config.sam2_checkpoint, max_frames=100)
+        self.video_predictor = VideoPrediction(self.config.sam2_model_cfg, self.config.sam2_checkpoint, self.config.config_path, max_frames=100)
         self.thumbnail_widget = QWidget()
         self.thumbnail = QHBoxLayout()
         self.thumbnail_widget.setLayout(self.thumbnail)

@@ -12,13 +12,16 @@ class SettingsWidget(QWidget):
         self.parent = parent
         self.setWindowTitle("Settings")
         self.setGeometry(100, 100, 300, 200)
-        self.setStyleSheet("background-color: #000000;")
+        self.setStyleSheet("background-color: #ffffff;")
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.load_video = QPushButton("Load video")
         self.load_video.clicked.connect(self.load_video_clicked)
         self.layout.addWidget(self.load_video)
+        self.add_annotation = QPushButton("Add annotation")
+        self.add_annotation.clicked.connect(self.add_annotation_clicked)
+        self.layout.addWidget(self.add_annotation)
         self.box_annotation = QPushButton("Box annotation")
         self.mask_annotation = QPushButton("Mask annotation")
         self.point_annotation = QPushButton("Point annotation")
@@ -46,12 +49,15 @@ class SettingsWidget(QWidget):
             self.visualitation_button.setText("Visualize image with mask")
         else:
             self.visualitation_button.setText("Visualize image")
+            
+    def add_annotation_clicked(self):
+        pass
     
     def propagate_clicked(self):
         self.parent.video_predictor.propagate()
     
     def clear_annotations_clicked(self):
-        pass
+        self.parent.video_predictor.cleanup()
     
     def set_annotation_type(self, annotation_type):
         self.annotation_type = annotation_type
