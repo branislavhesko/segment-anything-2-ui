@@ -1,5 +1,7 @@
 import dataclasses
 import logging
+import os
+
 import cv2
 from hydra import compose
 from hydra.utils import instantiate
@@ -107,6 +109,7 @@ def build_sam2_video_predictor(
     mode="eval",
     hydra_overrides_extra=[],
     apply_postprocessing=True,
+    config_path=None,
     **kwargs,
 ) -> Sam2VideoPredictorCustom:
     hydra_overrides = [
@@ -125,23 +128,41 @@ def build_sam2_video_predictor(
             "++model.fill_hole_area=8",
         ]
     hydra_overrides.extend(hydra_overrides_extra)
+    
+    # Configure Hydra's config path
+    from hydra.core.global_hydra import GlobalHydra
+    from hydra import initialize
 
-    # Read config and init model
-    cfg = compose(config_name=config_file, overrides=hydra_overrides)
-    OmegaConf.resolve(cfg)
-    model = instantiate(cfg.model, _recursive_=True)
-    _load_checkpoint(model, ckpt_path)
-    model = model.to(device)
-    if mode == "eval":
-        model.eval()
-    return model
+    # Reset Hydra's global configuration
+    if GlobalHydra.instance().is_initialized():
+        GlobalHydra.instance().clear()
+
+    # NOTE: Rel path should be relative to the caller directory
+    if config_path and os.path.isabs(config_path):
+        caller_dir = os.path.dirname(os.path.abspath(__file__))
+        rel_config_path = os.path.relpath(config_path, caller_dir)
+    else:
+        rel_config_path = config_path
+
+
+    # Initialize Hydra with the config path
+    with initialize(version_base=None, config_path=rel_config_path):
+        # Read config and init model
+        cfg = compose(config_name=config_file, overrides=hydra_overrides)
+        OmegaConf.resolve(cfg)
+        model = instantiate(cfg.model, _recursive_=True)
+        _load_checkpoint(model, ckpt_path)
+        model = model.to(device)
+        if mode == "eval":
+            model.eval()
+        return model
 
 
 class VideoPrediction:
     
-    def __init__(self, model_cfg, checkpoint_path, max_frames: int):
+    def __init__(self, model_cfg, checkpoint_path, config_path, max_frames: int):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.predictor = build_sam2_video_predictor(model_cfg, checkpoint_path, device=device)
+        self.predictor = build_sam2_video_predictor(model_cfg, checkpoint_path, device=device, config_path=config_path)
         self.inference_state = None
         self.is_propagated: bool = False
         self.video_data = VideoPredictionData(max_frames)
