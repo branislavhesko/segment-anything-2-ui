@@ -14,8 +14,8 @@ def load_from_numpy_frames(
     """
     Load video frames from a numpy array.
     """
-    img_mean = torch.tensor(img_mean, dtype=torch.float32)[:, None, None]
-    img_std = torch.tensor(img_std, dtype=torch.float32)[:, None, None]
+    img_mean = torch.tensor(img_mean, dtype=torch.float32)[:, None, None].to(compute_device)
+    img_std = torch.tensor(img_std, dtype=torch.float32)[:, None, None].to(compute_device)
     if frames.dtype == np.uint8:
         frames = frames / 255.0
     print(frames.shape)

@@ -26,7 +26,7 @@ COLORS = [
 
 
 def make_visualization_with_mask(frame: np.ndarray, prediction: SingleFramePrediction):
-    mask = prediction.mask > 0.0
+    mask = prediction.mask_logits > 0.0
     mask_colored = np.zeros_like(frame)
     mask_colored[mask] = np.array([255, 0, 0])
     return cv2.addWeighted(frame, 1.0, mask_colored, 0.2, 0)
@@ -78,6 +78,7 @@ class ImageLabel(QtWidgets.QLabel):
         super().__init__()
         self.parent = parent
         self.prediction_data = prediction_data
+        self.object_id = 0
         self.visualization_mode = VisualizationMode()
         self.actual_image = np.empty((0, 0, 3))
         self.video_predictor = self.parent.parent.video_predictor
@@ -189,7 +190,7 @@ class ImageLabel(QtWidgets.QLabel):
                 self.negative_points.append(cursor_event.pos())
             self.video_predictor.add_new_points_box(
                 frame_idx=self.frame_idx,
-                object_idx=0,
+                object_idx=self.object_id,
                 points=np.array([[cursor_event.pos().x(), cursor_event.pos().y()]]),
                 labels=np.array([1]) if cursor_event.button() == QtCore.Qt.LeftButton else np.array([0])
             )

@@ -144,7 +144,6 @@ def build_sam2_video_predictor(
     else:
         rel_config_path = config_path
 
-
     # Initialize Hydra with the config path
     with initialize(version_base=None, config_path=rel_config_path):
         # Read config and init model
@@ -204,13 +203,13 @@ class VideoPrediction:
         self.video_data.add_prediction(SingleFramePrediction(
             frame_idx=frame_idx, 
             obj_ids=out_obj_ids, 
-            mask_logits=out_mask_logits.squeeze().numpy(),
+            mask_logits=out_mask_logits.squeeze().cpu().numpy(),
             points=points,
             labels=labels,
             box=box,
-            mask=out_mask_logits.squeeze().numpy()
+            mask=None
         ), frame_idx)
-    
+
     def get_segmentation_results(self, index):
         if not self.is_propagated:
             return None
@@ -222,7 +221,7 @@ class VideoPrediction:
             self.video_data.add_prediction(SingleFramePrediction(
                 frame_idx=out_frame_idx, 
                 obj_ids=out_obj_ids, 
-                mask_logits=out_mask_logits.squeeze().numpy(),
+                mask_logits=out_mask_logits.squeeze().cpu().numpy(),
             ), out_frame_idx)    
         self.is_propagated = True
         

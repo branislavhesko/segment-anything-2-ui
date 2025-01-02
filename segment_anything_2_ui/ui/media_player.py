@@ -24,7 +24,7 @@ class MediaPlayer(QWidget):
         self.current_frame = 0
         self.position_slider = QSlider(orientation=Qt.Orientation.Horizontal)
         self.position_slider.setRange(0, self.video_length)
-        self.position_slider.sliderMoved.connect(self.on_slider_moved)
+        self.position_slider.valueChanged.connect(self.on_slider_moved)
         self.play_button = QPushButton("Play")
         self.play_button.clicked.connect(self.on_play_button)
         self.play_button.setShortcut("Space")
@@ -47,9 +47,10 @@ class MediaPlayer(QWidget):
         self.move_to_frame(self.position_slider.value())
         
     def move_to_frame(self, frame_number):
-        self.video.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
+        frame_number = int(frame_number)
+        print(f"Moving to frame {frame_number}")
         self.current_frame = frame_number
-        self.image_label.set_image(self[frame_number])
+        self.image_label.set_image(self[frame_number - 1] if frame_number > 0 else self[0])
         self.position_slider.setValue(frame_number)
         
     def on_play_button(self):

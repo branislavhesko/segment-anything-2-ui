@@ -116,4 +116,4 @@ model:
   multimask_max_pt_num: 1
   use_mlp_for_obj_ptr_proj: true
   # Compilation flag
-  compile_image_encoder: False
+  compile_image_encoder: false
