@@ -164,7 +164,11 @@ class VideoPrediction:
         self.predictor = build_sam2_video_predictor(model_cfg, checkpoint_path, device=device, config_path=config_path)
         self.inference_state = None
         self.is_propagated: bool = False
+        self.current_object_id: int = 0
         self.video_data = VideoPredictionData(max_frames)
+        
+    def add_new_object(self):
+        self.current_object_id += 1
         
     def add_video(self, video_path):
         self.inference_state = self.predictor.init_state(frames=self.load_video(video_path))
@@ -186,7 +190,7 @@ class VideoPrediction:
     def reset(self):
         self.predictor.reset()
         
-    def add_new_points_box(self, frame_idx, object_idx, box=None, points=None, labels=None):
+    def add_new_points_box(self, frame_idx, box=None, points=None, labels=None):
         # BOX is a list of 4 numbers [x1, y1, x2, y2]
         # box = np.array([300, 0, 500, 400], dtype=np.float32)
         # points = np.array([[460, 60]], dtype=np.float32)
@@ -194,7 +198,7 @@ class VideoPrediction:
         _, out_obj_ids, out_mask_logits = self.predictor.add_new_points_or_box(
             inference_state=self.inference_state,
             frame_idx=frame_idx,
-            obj_id=object_idx,
+            obj_id=self.current_object_id,
             points=points,
             labels=labels,
             box=box,
@@ -203,7 +207,7 @@ class VideoPrediction:
         self.video_data.add_prediction(SingleFramePrediction(
             frame_idx=frame_idx, 
             obj_ids=out_obj_ids, 
-            mask_logits=out_mask_logits.squeeze().cpu().numpy(),
+            mask_logits=out_mask_logits.squeeze(1).cpu().numpy(),
             points=points,
             labels=labels,
             box=box,
@@ -213,7 +217,7 @@ class VideoPrediction:
     def get_segmentation_results(self, index):
         if not self.is_propagated:
             return None
-        return self.segmentation_results[index]
+        return self.video_data.get_prediction(index)
     
     def propagate(self):
         print("Propagating mask to next frame")
@@ -221,7 +225,7 @@ class VideoPrediction:
             self.video_data.add_prediction(SingleFramePrediction(
                 frame_idx=out_frame_idx, 
                 obj_ids=out_obj_ids, 
-                mask_logits=out_mask_logits.squeeze().cpu().numpy(),
+                mask_logits=out_mask_logits.squeeze(1).cpu().numpy(),
             ), out_frame_idx)    
         self.is_propagated = True
         

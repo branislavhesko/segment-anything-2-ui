@@ -1,9 +1,23 @@
 from enum import Enum
 from functools import partial
 
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QFileDialog
-
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QComboBox, QFileDialog
+from PySide6.QtGui import QIntValidator
 from segment_anything_2_ui.utils.structures import PaintType
+
+
+class ObjectPicker(QComboBox):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.parent = parent
+        self.setEditable(True)
+        self.setValidator(QIntValidator())
+    
+    def add_object(self, object_id: int):
+        self.addItem(str(object_id))
+    
+    def get_object(self):
+        return int(self.currentText())
 
 
 class SettingsWidget(QWidget):
@@ -19,6 +33,9 @@ class SettingsWidget(QWidget):
         self.load_video = QPushButton("Load video")
         self.load_video.clicked.connect(self.load_video_clicked)
         self.layout.addWidget(self.load_video)
+        self.object_picker = ObjectPicker(self)
+        self.object_picker.add_object(0)
+        self.layout.addWidget(self.object_picker)
         self.add_annotation = QPushButton("Add annotation")
         self.add_annotation.clicked.connect(self.add_annotation_clicked)
         self.layout.addWidget(self.add_annotation)
@@ -44,14 +61,16 @@ class SettingsWidget(QWidget):
         self.annotation_type = PaintType.POINT
     
     def visualitation_clicked(self):
-        self.parent.mediaPlayer.image_label.visualization_mode.next()
+        self.parent.media_player.image_label.visualization_mode.next()
         if self.visualitation_button.text() == "Visualize image":
             self.visualitation_button.setText("Visualize image with mask")
         else:
             self.visualitation_button.setText("Visualize image")
             
     def add_annotation_clicked(self):
-        pass
+        print("Adding new object, new object id: ", self.parent.video_predictor.current_object_id + 1)
+        self.parent.video_predictor.add_new_object()
+        self.parent.settings_widget.object_picker.add_object(self.parent.video_predictor.current_object_id)
     
     def propagate_clicked(self):
         self.parent.video_predictor.propagate()
@@ -60,8 +79,7 @@ class SettingsWidget(QWidget):
         self.parent.video_predictor.cleanup()
     
     def set_annotation_type(self, annotation_type):
-        self.annotation_type = annotation_type
-        self.update()
+        self.parent.media_player.image_label.set_annotation_type(annotation_type)
         
     def load_video_clicked(self):
         self.load_video_dialog = QFileDialog()

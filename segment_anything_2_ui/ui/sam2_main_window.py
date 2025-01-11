@@ -10,6 +10,20 @@ from segment_anything_2_ui.engine.video_prediction import VideoPrediction
 from segment_anything_2_ui.ui.media_player import MediaPlayer
 from segment_anything_2_ui.ui.settings_widget import SettingsWidget
 
+
+
+# TODO: add visualization to the thumbnail
+class ThumbnailLabel(QLabel):
+    def __init__(self, parent=None, index: int = 0):
+        super().__init__()
+        self.index = index
+        self.parent = parent
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.parent.setPosition(self.index)
+
+
 class PyVideoPlayer(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -21,16 +35,16 @@ class PyVideoPlayer(QWidget):
         self.thumbnail = QHBoxLayout()
         self.thumbnail_widget.setLayout(self.thumbnail)
         self.settings_widget = SettingsWidget(self)
-        self.timeLabel = QLabel()
-        self.timeLabel.setStyleSheet(
+        self.time_label = QLabel()
+        self.time_label.setStyleSheet(
             "color: #4f5b6e; font-family: 'Roboto'; font-size: 9pt; font-weight: bold;"
         )
-        self.mediaPlayer: MediaPlayer = None
+        self.media_player: MediaPlayer = None
         # Set up the layout
         self.setMedia("video.avi")
 
         layout = QVBoxLayout()
-        layout.addWidget(self.mediaPlayer)
+        layout.addWidget(self.media_player)
         layout.addWidget(self.thumbnail_widget)
         hlayout = QHBoxLayout()
         hlayout.addWidget(self.settings_widget)
@@ -40,8 +54,8 @@ class PyVideoPlayer(QWidget):
 
     def setMedia(self, fileName):
         self.generate_thumbnail_previews(fileName)
-        self.mediaPlayer = MediaPlayer(self, cv2.VideoCapture(fileName), prediction_data=self.video_predictor.video_data, config=self.config)
-        self.mediaPlayer.play_button.setEnabled(True)
+        self.media_player = MediaPlayer(self, cv2.VideoCapture(fileName), prediction_data=self.video_predictor.video_data, config=self.config)
+        self.media_player.play_button.setEnabled(True)
         self.video_predictor.add_video(fileName)
         # self.mediaPlayer.play()
 
@@ -66,16 +80,15 @@ class PyVideoPlayer(QWidget):
 
         # Display thumbnails on the slider
         for i, thumbnail in enumerate(thumbnails):
-            label = QLabel()
+            label = ThumbnailLabel(self, i)
             label.setPixmap(thumbnail.scaled(100, 100, Qt.KeepAspectRatio))
             self.thumbnail.addWidget(label)
 
-    def setPosition(self, position):
-        self.mediaPlayer.setPosition(position)
+    def set_position(self, position):
+        self.media_player.move_to_frame(position)
 
-    def handleError(self):
-        self.playButton.setEnabled(False)
-        print("Error: " + self.mediaPlayer.errorString())
+    def handle_error(self):
+        print("Error: " + self.media_player.errorString())
 
 
 if __name__ == "__main__":
