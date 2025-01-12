@@ -6,10 +6,10 @@ from PySide6.QtGui import QPixmap, QImage, QIcon
 from PySide6.QtCore import Qt, QUrl
 
 from segment_anything_2_ui.configs.config import UiConfig
+from segment_anything_2_ui.engine.saver import InferenceSaver
 from segment_anything_2_ui.engine.video_prediction import VideoPrediction
 from segment_anything_2_ui.ui.media_player import MediaPlayer
 from segment_anything_2_ui.ui.settings_widget import SettingsWidget
-
 
 
 # TODO: add visualization to the thumbnail
@@ -21,7 +21,7 @@ class ThumbnailLabel(QLabel):
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
-            self.parent.setPosition(self.index)
+            self.parent.set_position(self.index)
 
 
 class PyVideoPlayer(QWidget):
@@ -30,7 +30,12 @@ class PyVideoPlayer(QWidget):
         self.setWindowTitle("Segment Anything 2 UI")
         self.move(100, 100)
         self.config = UiConfig()
-        self.video_predictor = VideoPrediction(self.config.sam2_model_cfg, self.config.sam2_checkpoint, self.config.config_path, max_frames=100)
+        self.video_predictor = VideoPrediction(
+            self.config.sam2_model_cfg, 
+            self.config.sam2_checkpoint, 
+            self.config.config_path, 
+            max_frames=100
+        )
         self.thumbnail_widget = QWidget()
         self.thumbnail = QHBoxLayout()
         self.thumbnail_widget.setLayout(self.thumbnail)
@@ -41,8 +46,9 @@ class PyVideoPlayer(QWidget):
         )
         self.media_player: MediaPlayer = None
         # Set up the layout
-        self.setMedia("video.avi")
-
+        self.media_path = "video.avi"
+        self.set_media(self.media_path)
+        self.inference_saver = InferenceSaver(self.config)
         layout = QVBoxLayout()
         layout.addWidget(self.media_player)
         layout.addWidget(self.thumbnail_widget)
@@ -52,7 +58,7 @@ class PyVideoPlayer(QWidget):
         hlayout.addLayout(layout)
         self.setLayout(hlayout)
 
-    def setMedia(self, fileName):
+    def set_media(self, fileName):
         self.generate_thumbnail_previews(fileName)
         self.media_player = MediaPlayer(self, cv2.VideoCapture(fileName), prediction_data=self.video_predictor.video_data, config=self.config)
         self.media_player.play_button.setEnabled(True)
@@ -89,6 +95,10 @@ class PyVideoPlayer(QWidget):
 
     def handle_error(self):
         print("Error: " + self.media_player.errorString())
+        
+    @property
+    def video_data(self):
+        return self.video_predictor.video_data
 
 
 if __name__ == "__main__":

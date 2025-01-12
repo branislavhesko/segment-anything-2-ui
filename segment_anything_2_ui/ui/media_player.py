@@ -20,7 +20,7 @@ class MediaPlayer(QWidget):
         self.video = video
         self.image_label = ImageLabel(parent=self, prediction_data=self.prediction_data, config=self.config)
         self.video_length = int(self.video.get(cv2.CAP_PROP_FRAME_COUNT))
-        self.fps = self.video.get(cv2.CAP_PROP_FPS)
+        self.fps = self.video.get(cv2.CAP_PROP_FPS) * self.config.video_speed
         self.current_frame = 0
         self.position_slider = QSlider(orientation=Qt.Orientation.Horizontal)
         self.position_slider.setRange(0, self.video_length)

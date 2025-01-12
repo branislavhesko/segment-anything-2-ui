@@ -45,6 +45,20 @@ class VideoPredictionData:
         self.predictions = [None] * num_frames
         self.max_frames = num_frames
 
+    @torch.no_grad()
+    def to_dict(self, save_raw: bool = False):
+        output = {}
+        for prediction in self.predictions:
+            if prediction is not None:
+                if save_raw:
+                    output[f"frame_{prediction.frame_idx}"] = torch.from_numpy(prediction.mask_logits).to(torch.float32)
+                else:
+                    mask_logits = torch.from_numpy(prediction.mask_logits > 0)
+                    mask_logits = torch.cat([
+                        torch.zeros(1, *mask_logits.shape[1:]), mask_logits], dim=0).argmax(dim=0).to(torch.uint8)
+                    output[f"frame_{prediction.frame_idx}"] = mask_logits
+        return output
+
 
 HF_MODEL_ID_TO_FILENAMES = {
     "facebook/sam2-hiera-tiny": (

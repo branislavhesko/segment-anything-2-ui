@@ -1,7 +1,7 @@
 from enum import Enum
 from functools import partial
 
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QComboBox, QFileDialog
+from PySide6.QtWidgets import QCheckBox, QComboBox, QFileDialog, QHBoxLayout, QPushButton, QVBoxLayout, QWidget
 from PySide6.QtGui import QIntValidator
 from segment_anything_2_ui.utils.structures import PaintType
 
@@ -52,15 +52,25 @@ class SettingsWidget(QWidget):
         self.point_annotation.clicked.connect(partial(self.set_annotation_type, PaintType.POINT))
         self.clear_annotations.clicked.connect(self.clear_annotations_clicked)
         self.visualitation_button.clicked.connect(self.visualitation_clicked)
+        self.save_inference = QPushButton("Save inference")
+        self.save_inference.clicked.connect(self.save_inference_clicked)
+        self.save_raw = QCheckBox("Save raw")
+        self.save_raw.setChecked(False)
         self.layout.addWidget(self.box_annotation)
         self.layout.addWidget(self.mask_annotation)
         self.layout.addWidget(self.point_annotation)
         self.layout.addWidget(self.visualitation_button)
         self.layout.addWidget(self.propagate)
         self.layout.addWidget(self.clear_annotations)
+        h_layout = QHBoxLayout()
+        h_layout.addWidget(self.save_inference)
+        h_layout.addWidget(self.save_raw)
+        self.layout.addLayout(h_layout)
         self.annotation_type = PaintType.POINT
         self.layout.addStretch(1)
 
+    def save_inference_clicked(self):
+        self.parent.inference_saver.save_inference(self.parent.media_path, self.parent.video_data, save_raw=self.save_raw.isChecked())
     
     def visualitation_clicked(self):
         self.parent.media_player.image_label.visualization_mode.next()
