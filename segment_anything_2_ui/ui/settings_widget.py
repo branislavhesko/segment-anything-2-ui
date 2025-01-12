@@ -59,6 +59,8 @@ class SettingsWidget(QWidget):
         self.layout.addWidget(self.propagate)
         self.layout.addWidget(self.clear_annotations)
         self.annotation_type = PaintType.POINT
+        self.layout.addStretch(1)
+
     
     def visualitation_clicked(self):
         self.parent.media_player.image_label.visualization_mode.next()

@@ -80,7 +80,7 @@ class PyVideoPlayer(QWidget):
 
         # Display thumbnails on the slider
         for i, thumbnail in enumerate(thumbnails):
-            label = ThumbnailLabel(self, i)
+            label = ThumbnailLabel(self, i * interval)
             label.setPixmap(thumbnail.scaled(100, 100, Qt.KeepAspectRatio))
             self.thumbnail.addWidget(label)
 
