@@ -100,7 +100,7 @@ class SettingsWidget(QWidget):
         self.load_video_dialog.exec()
         try:
             selected_video = self.load_video_dialog.selectedFiles()[0]
-            self.parent.setMedia(selected_video)
+            self.parent.set_media(selected_video)
             return selected_video
         except IndexError:
             return None
