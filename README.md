@@ -11,6 +11,8 @@ This UI wraps the [Segment Anything 2](https://github.com/facebookresearch/sam2)
 - **Visualization Modes**: Toggle between different visualization modes, including image and image with mask.
 - **Thumbnail Previews**: Generate and display thumbnail previews for quick navigation.
 - **Configurable Settings**: Customize settings through a dedicated settings widget.
+- **Save inference data**: Save the inference data to a file using safetensors.
+- **Multi-object tracking**: Track multiple objects in the video.
 
 ## Installation
 
