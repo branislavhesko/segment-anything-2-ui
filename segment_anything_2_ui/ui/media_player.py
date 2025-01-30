@@ -71,7 +71,7 @@ class MediaPlayer(QWidget):
         ret, frame = self.video.read()
         if ret:
             self.current_frame += 1
-            self.image_label.set_image(frame)
+            self.image_label.set_image(cv2.resize(frame, (1024, 1024)))
         else:
             self.current_frame = 0
         self.position_slider.setValue(self.current_frame)
@@ -80,7 +80,7 @@ class MediaPlayer(QWidget):
         self.video.set(cv2.CAP_PROP_POS_FRAMES, index)
         ret, frame = self.video.read()
         if ret:
-            return frame
+            return cv2.resize(frame, (1024, 1024))
         else:
             QMessageBox.warning(QDialog(), "Video Ended", "Video has ended")
             return None

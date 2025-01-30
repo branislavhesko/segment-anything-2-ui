@@ -36,6 +36,9 @@ class PyVideoPlayer(QWidget):
             self.config.config_path, 
             max_frames=100
         )
+        self.video_layout = QVBoxLayout()
+        self.main_layout = QHBoxLayout()
+
         self.thumbnail_widget = QWidget()
         self.thumbnail = QHBoxLayout()
         self.thumbnail_widget.setLayout(self.thumbnail)
@@ -46,26 +49,35 @@ class PyVideoPlayer(QWidget):
         )
         self.media_player: MediaPlayer = None
         # Set up the layout
-        self.media_path = "video.avi"
-        self.set_media(self.media_path)
+        self.media_path = "/home/brani/tescan/TEM-Plugins/notebooks/aligned.mp4"
         self.inference_saver = InferenceSaver(self.config)
-        layout = QVBoxLayout()
-        layout.addWidget(self.media_player)
-        layout.addWidget(self.thumbnail_widget)
-        hlayout = QHBoxLayout()
-        hlayout.addWidget(self.settings_widget)
-        layout.setContentsMargins(10, 0, 10, 0)
-        hlayout.addLayout(layout)
-        self.setLayout(hlayout)
+        self.main_layout.addWidget(self.settings_widget)
+        self.main_layout.setContentsMargins(10, 0, 10, 0)
+        self.main_layout.addLayout(self.video_layout)
+        self.setLayout(self.main_layout)
+        self.set_media(self.media_path)
 
     def set_media(self, fileName):
+        if self.media_player:
+            self.video_layout.removeWidget(self.media_player)
+        if self.thumbnail_widget:
+            self.video_layout.removeWidget(self.thumbnail_widget)
+        
         self.generate_thumbnail_previews(fileName)
+
         self.media_player = MediaPlayer(self, cv2.VideoCapture(fileName), prediction_data=self.video_predictor.video_data, config=self.config)
         self.media_player.play_button.setEnabled(True)
         self.video_predictor.add_video(fileName)
+        self.video_layout.addWidget(self.media_player)
+        self.video_layout.addWidget(self.thumbnail_widget)
         # self.mediaPlayer.play()
 
     def generate_thumbnail_previews(self, url):
+        while self.thumbnail.count():
+            item = self.thumbnail.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+        
         video_capture = cv2.VideoCapture(url)
         total_frames = int(video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
         interval = total_frames // 10  # Generate 10 thumbnails

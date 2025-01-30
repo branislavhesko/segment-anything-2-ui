@@ -97,8 +97,10 @@ class ImageLabel(QtWidgets.QLabel):
         self.config = config
         
     def set_image(self, image):
+        self.clear()
         self.actual_image = image
         self.update_visualization()
+        
     def update_visualization(self):
         visualization = self.make_visualization(self.actual_image, self.frame_idx)
         self.setPixmap(ImagePixmap.fromarray(visualization))

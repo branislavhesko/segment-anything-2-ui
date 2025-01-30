@@ -42,16 +42,23 @@ class SettingsWidget(QWidget):
         self.box_annotation = QPushButton("Box annotation")
         self.mask_annotation = QPushButton("Mask annotation")
         self.point_annotation = QPushButton("Point annotation")
-        self.visualitation_button = QPushButton("Visualize image")
+        self.cancel_annotation = QPushButton("Cancel annotation")
+        self.cancel_annotation.clicked.connect(self.cancel_annotation_clicked)
+        self.mask_picker = QPushButton("Mask picker")
+        self.mask_picker.clicked.connect(self.mask_picker_clicked)
+        self.visualization_button = QPushButton("Visualize image")
         self.propagate = QPushButton("Propagate")
+        self.propagate_reverse = QPushButton("Propagate reverse")
         self.propagate.setShortcut("F4")
         self.propagate.clicked.connect(self.propagate_clicked)
+        self.propagate_reverse.setShortcut("F5")
+        self.propagate_reverse.clicked.connect(self.propagate_reverse_clicked)
         self.clear_annotations = QPushButton("Clear annotations")
         self.box_annotation.clicked.connect(partial(self.set_annotation_type, PaintType.BOX))
         self.mask_annotation.clicked.connect(partial(self.set_annotation_type, PaintType.MASK))
         self.point_annotation.clicked.connect(partial(self.set_annotation_type, PaintType.POINT))
         self.clear_annotations.clicked.connect(self.clear_annotations_clicked)
-        self.visualitation_button.clicked.connect(self.visualitation_clicked)
+        self.visualization_button.clicked.connect(self.visualitation_clicked)
         self.save_inference = QPushButton("Save inference")
         self.save_inference.clicked.connect(self.save_inference_clicked)
         self.save_raw = QCheckBox("Save raw")
@@ -59,8 +66,11 @@ class SettingsWidget(QWidget):
         self.layout.addWidget(self.box_annotation)
         self.layout.addWidget(self.mask_annotation)
         self.layout.addWidget(self.point_annotation)
-        self.layout.addWidget(self.visualitation_button)
+        self.layout.addWidget(self.cancel_annotation)
+        self.layout.addWidget(self.visualization_button)
+        self.layout.addWidget(self.mask_picker)
         self.layout.addWidget(self.propagate)
+        self.layout.addWidget(self.propagate_reverse)
         self.layout.addWidget(self.clear_annotations)
         h_layout = QHBoxLayout()
         h_layout.addWidget(self.save_inference)
@@ -68,16 +78,26 @@ class SettingsWidget(QWidget):
         self.layout.addLayout(h_layout)
         self.annotation_type = PaintType.POINT
         self.layout.addStretch(1)
+        
+    def cancel_annotation_clicked(self):
+        self.parent.media_player.image_label.clear()
+        self.parent.video_predictor.clear_prompts_in_frame_for_object_id(
+            self.parent.media_player.image_label.frame_idx,
+        )
+        self.parent.media_player.image_label.update_visualization()
+        
+    def mask_picker_clicked(self):
+        self.parent.media_player.image_label.set_annotation_type(PaintType.MASK_PICKER)
 
     def save_inference_clicked(self):
         self.parent.inference_saver.save_inference(self.parent.media_path, self.parent.video_data, save_raw=self.save_raw.isChecked())
     
     def visualitation_clicked(self):
         self.parent.media_player.image_label.visualization_mode.next()
-        if self.visualitation_button.text() == "Visualize image":
-            self.visualitation_button.setText("Visualize image with mask")
+        if self.visualization_button.text() == "Visualize image":
+            self.visualization_button.setText("Visualize image with mask")
         else:
-            self.visualitation_button.setText("Visualize image")
+            self.visualization_button.setText("Visualize image")
             
     def add_annotation_clicked(self):
         print("Adding new object, new object id: ", self.parent.video_predictor.current_object_id + 1)
@@ -86,6 +106,9 @@ class SettingsWidget(QWidget):
     
     def propagate_clicked(self):
         self.parent.video_predictor.propagate()
+        
+    def propagate_reverse_clicked(self):
+        self.parent.video_predictor.propagate_reverse()
     
     def clear_annotations_clicked(self):
         self.parent.video_predictor.cleanup()
@@ -100,7 +123,7 @@ class SettingsWidget(QWidget):
         self.load_video_dialog.exec()
         try:
             selected_video = self.load_video_dialog.selectedFiles()[0]
-            self.parent.setMedia(selected_video)
+            self.parent.set_media(selected_video)
             return selected_video
         except IndexError:
             return None

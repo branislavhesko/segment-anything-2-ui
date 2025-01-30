@@ -198,15 +198,30 @@ class VideoPrediction:
             ret, frame = video.read()
             if not ret:
                 break
-            frames.append(frame)
+            frames.append(cv2.resize(frame, (1024, 1024)))
         video.release()
         return np.array(frames)
 
     def reset(self):
         self.predictor.reset()
+        
+    @torch.no_grad()
+    def clear_prompts_in_frame_for_object_id(self, frame_idx, obj_id=None):
+        frame_idx, obj_ids, out_mask_logits = self.predictor.clear_all_prompts_in_frame(
+            self.inference_state, 
+            frame_idx, 
+            obj_id if obj_id is not None else self.current_object_id, 
+            need_output=True
+        )
+        
+        self.video_data.add_prediction(SingleFramePrediction(
+            frame_idx=frame_idx, 
+            obj_ids=obj_ids, 
+            mask_logits=out_mask_logits.squeeze(1).cpu().numpy(),
+        ), frame_idx)
     
     @torch.no_grad()
-    def add_new_points_box(self, frame_idx, box=None, points=None, labels=None):
+    def add_new_points_box(self, frame_idx, box=None, points=None, labels=None, clear_old_points=False):
         # BOX is a list of 4 numbers [x1, y1, x2, y2]
         # box = np.array([300, 0, 500, 400], dtype=np.float32)
         # points = np.array([[460, 60]], dtype=np.float32)
@@ -218,7 +233,7 @@ class VideoPrediction:
             points=points,
             labels=labels,
             box=box,
-            clear_old_points=False
+            clear_old_points=clear_old_points
         )
         self.video_data.add_prediction(SingleFramePrediction(
             frame_idx=frame_idx, 
@@ -240,6 +255,18 @@ class VideoPrediction:
         print("Propagating mask to next frame")
         with torch.autocast(device_type=self.device.type, dtype=torch.bfloat16):
             for out_frame_idx, out_obj_ids, out_mask_logits in tqdm(self.predictor.propagate_in_video(self.inference_state)):
+                self.video_data.add_prediction(SingleFramePrediction(
+                    frame_idx=out_frame_idx, 
+                    obj_ids=out_obj_ids, 
+                    mask_logits=out_mask_logits.squeeze(1).cpu().numpy(),
+                ), out_frame_idx)    
+        self.is_propagated = True
+        
+    @torch.no_grad()
+    def propagate_reverse(self):
+        print("Propagating mask to previous frame")
+        with torch.autocast(device_type=self.device.type, dtype=torch.bfloat16):
+            for out_frame_idx, out_obj_ids, out_mask_logits in tqdm(self.predictor.propagate_in_video(self.inference_state, reverse=True)):
                 self.video_data.add_prediction(SingleFramePrediction(
                     frame_idx=out_frame_idx, 
                     obj_ids=out_obj_ids, 
