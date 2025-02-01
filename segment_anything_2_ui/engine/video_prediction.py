@@ -26,7 +26,7 @@ class SingleFramePrediction:
     
 class VideoPredictionData:
     def __init__(self, max_frames: int):
-        self.predictions: list[SingleFramePrediction] = [None] * max_frames
+        self.predictions: list[SingleFramePrediction] = [None] * (max_frames + 1)
         self.current_frame_idx: int = 0
         self.max_frames: int = max_frames
         
@@ -38,11 +38,11 @@ class VideoPredictionData:
         return self.predictions[frame_idx]
     
     def clear(self):
-        self.predictions = [None] * self.max_frames
+        self.predictions = [None] * (self.max_frames + 1)
         self.current_frame_idx = 0
         
     def set_video_length(self, num_frames: int):
-        self.predictions = [None] * num_frames
+        self.predictions = [None] * (num_frames + 1)
         self.max_frames = num_frames
 
     @torch.no_grad()
@@ -185,17 +185,21 @@ class VideoPrediction:
     def add_new_object(self):
         self.current_object_id += 1
         
-    def add_video(self, video_path):
-        self.inference_state = self.predictor.init_state(frames=self.load_video(video_path))
+    def add_video(self, video_path, step_size=1):
+        self.inference_state = self.predictor.init_state(frames=self.load_video(video_path, step_size))
         self.predictor.reset_state(self.inference_state)
         self.video_data.set_video_length(len(self.inference_state["images"]))
         print(f"Loaded video with {len(self.inference_state['images'])} frames")
 
-    def load_video(self, video_path):
+    def load_video(self, video_path, step_size=1):
         video = cv2.VideoCapture(video_path)
         frames = []
+        current_frame = 0
         while video.isOpened():
             ret, frame = video.read()
+            current_frame += 1
+            if step_size > 0 and not current_frame % step_size == 0:
+                continue
             if not ret:
                 break
             frames.append(cv2.resize(frame, (1024, 1024)))
@@ -291,8 +295,3 @@ def _load_checkpoint(model, ckpt_path):
             logging.error(unexpected_keys)
             raise RuntimeError()
         logging.info("Loaded checkpoint sucessfully")
-
-
-if __name__ == "__main__":
-    video_prediction = VideoPrediction(sam2_checkpoint, model_cfg)
-    video_prediction.add_video("/Users/brani/code/segment-anything-2-ui/video.avi")

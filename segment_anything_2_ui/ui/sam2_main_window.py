@@ -49,7 +49,7 @@ class PyVideoPlayer(QWidget):
         )
         self.media_player: MediaPlayer = None
         # Set up the layout
-        self.media_path = "/home/brani/tescan/TEM-Plugins/notebooks/aligned.mp4"
+        self.media_path = "/home/brani/Downloads/6ad54ec5-3b7a-4e41-855e-d533bf7e5983.mp4"
         self.inference_saver = InferenceSaver(self.config)
         self.main_layout.addWidget(self.settings_widget)
         self.main_layout.setContentsMargins(10, 0, 10, 0)
@@ -67,7 +67,7 @@ class PyVideoPlayer(QWidget):
 
         self.media_player = MediaPlayer(self, cv2.VideoCapture(fileName), prediction_data=self.video_predictor.video_data, config=self.config)
         self.media_player.play_button.setEnabled(True)
-        self.video_predictor.add_video(fileName)
+        self.video_predictor.add_video(fileName, step_size=self.media_player.step_size)
         self.video_layout.addWidget(self.media_player)
         self.video_layout.addWidget(self.thumbnail_widget)
         # self.mediaPlayer.play()
