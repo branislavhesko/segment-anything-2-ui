@@ -1,0 +1,10 @@
+numpy
+opencv-python
+torch>=2.5.0
+torchvision
+safetensors
+hydra-core
+omegaconf
+tqdm
+pyside6
+sam2

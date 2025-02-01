@@ -37,14 +37,6 @@ def get_device():
     return device
 
 
-CHECKPOINTS = {
-    "sam2_hiera_large": os.path.join(os.getcwd(), "checkpoints", "sam2_hiera_large.pt"),
-    "sam2_hiera_small": os.path.join(os.getcwd(), "checkpoints", "sam2_hiera_small.pt"),
-}
-
-model_cfg = "sam2_hiera_l.yaml"
-
-
 class ImagePrediction:
     
     def __init__(self, checkpooint_path, model_cfg):
