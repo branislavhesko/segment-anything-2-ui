@@ -7,6 +7,10 @@ This UI wraps the [Segment Anything 2](https://github.com/facebookresearch/sam2)
 Please use this repository for image only annotation.
 [Segment anything UI](https://github.com/branislavhesko/segment-anything-ui)
 
+
+![GUI](segment_anything_2_ui/assets/example.png)
+
+
 ## Features
 
 - **Video Playback**: Play, pause, and navigate through video frames.
