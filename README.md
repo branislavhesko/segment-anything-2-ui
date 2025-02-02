@@ -4,6 +4,9 @@ Segment Anything 2 UI is a graphical user interface for video annotation, built 
 
 This UI wraps the [Segment Anything 2](https://github.com/facebookresearch/sam2) model.
 
+Please use this repository for image only annotation.
+[Segment anything UI](https://github.com/branislavhesko/segment-anything-ui)
+
 ## Features
 
 - **Video Playback**: Play, pause, and navigate through video frames.
@@ -28,8 +31,27 @@ This UI wraps the [Segment Anything 2](https://github.com/facebookresearch/sam2)
    pip install -r requirements.txt
    ```
 
-3. **Download the SAM2 model checkpoint**:
-   Place the `sam2_hiera_small.pt` checkpoint file in the `checkpoints` directory.
+3. **Install SAM2**:
+   SAM 2 needs to be installed first before use. The code requires `python>=3.10`, as well as `torch>=2.5.1` and `torchvision>=0.20.1`. Please follow the instructions [here](https://pytorch.org/get-started/locally/) to install both PyTorch and TorchVision dependencies. You can install SAM 2 on a GPU machine using:
+
+   ```bash
+   git clone https://github.com/facebookresearch/sam2.git && cd sam2
+
+   pip install -e .
+   ```
+   If you are installing on Windows, it's strongly recommended to use [Windows Subsystem for Linux (WSL)](https://learn.microsoft.com/en-us/windows/wsl/install) with Ubuntu.
+
+4. **Download the SAM2 model checkpoint**:
+   - [sam2.1_hiera_tiny.pt](https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_tiny.pt)
+   - [sam2.1_hiera_small.pt](https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_small.pt)
+   - [sam2.1_hiera_base_plus.pt](https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_base_plus.pt)
+   - [sam2.1_hiera_large.pt](https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large.pt)
+
+Use curl or wget to download the model checkpoint and place it in the `checkpoints` directory.
+
+5. ** Setup config.py file**:
+   - Modify accordingly **segment_anything_2_ui/configs/config.py** file.
+
 
 ## Usage
 
@@ -39,28 +61,27 @@ This UI wraps the [Segment Anything 2](https://github.com/facebookresearch/sam2)
    python segment_anything_2_ui/ui/sam2_main_window.py
    ```
 
+   ```powershell
+   set PYTHONPATH=$PYTHONPATH;.
+   python segment_anything_2_ui/ui/sam2_main_window.py
+   ```
+
 2. **Load a video**:
    - Click on the "Load video" button in the settings widget to select a video file.
 
 3. **Annotate the video**:
    - Use the annotation tools provided in the settings widget to annotate the video frames.
 
-4. **Toggle visualization modes**:
-   - Use the "Visualize image" button to switch between different visualization modes.
+4. **Propagate the inference data**:
+   - Use the "Propagate" button to propagate the inference data to the next frames.
+   - Use the "Propagate reverse" button to propagate the inference data to the previous frames.
 
-## Configuration
-
-The application can be configured using the `UiConfig` class in `segment_anything_2_ui/configs/config.py`. You can adjust settings such as image size and model configuration.
+5. **Save the inference data**:
+   - Use the "Save" button to save the inference data to a file using safetensors.
 
 ## Contributing
 
-Contributions are welcome! Please follow these steps to contribute:
-
-1. Fork the repository.
-2. Create a new branch for your feature or bugfix.
-3. Commit your changes and push them to your fork.
-4. Submit a pull request with a detailed description of your changes.
-
+Contributions are welcome!
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
