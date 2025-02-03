@@ -10,6 +10,7 @@ from segment_anything_2_ui.engine.saver import InferenceSaver
 from segment_anything_2_ui.engine.video_prediction import VideoPrediction
 from segment_anything_2_ui.ui.media_player import MediaPlayer
 from segment_anything_2_ui.ui.settings_widget import SettingsWidget
+from segment_anything_2_ui.utils.structures import build_video_capture
 
 
 # TODO: add visualization to the thumbnail
@@ -49,7 +50,7 @@ class PyVideoPlayer(QWidget):
         )
         self.media_player: MediaPlayer = None
         # Set up the layout
-        self.media_path = "/home/brani/Downloads/6ad54ec5-3b7a-4e41-855e-d533bf7e5983.mp4"
+        self.media_path = "/home/brani/DATA/DATASETS/snemi/image/test-input.tif"
         self.inference_saver = InferenceSaver(self.config)
         self.main_layout.addWidget(self.settings_widget)
         self.main_layout.setContentsMargins(10, 0, 10, 0)
@@ -65,7 +66,7 @@ class PyVideoPlayer(QWidget):
         
         self.generate_thumbnail_previews(fileName)
 
-        self.media_player = MediaPlayer(self, cv2.VideoCapture(fileName), prediction_data=self.video_predictor.video_data, config=self.config)
+        self.media_player = MediaPlayer(self, build_video_capture(fileName), prediction_data=self.video_predictor.video_data, config=self.config)
         self.media_player.play_button.setEnabled(True)
         self.video_predictor.add_video(fileName, step_size=self.media_player.step_size)
         self.video_layout.addWidget(self.media_player)
@@ -78,7 +79,7 @@ class PyVideoPlayer(QWidget):
             if item.widget():
                 item.widget().deleteLater()
         
-        video_capture = cv2.VideoCapture(url)
+        video_capture = build_video_capture(url)
         total_frames = int(video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
         interval = total_frames // 10  # Generate 10 thumbnails
         thumbnails = []

@@ -9,6 +9,8 @@ from omegaconf import OmegaConf
 import numpy as np
 import torch
 from tqdm import tqdm
+import tifffile
+
 from segment_anything_2_ui.engine.sam2_video_predictor import Sam2VideoPredictorCustom
 
 
@@ -186,10 +188,25 @@ class VideoPrediction:
         self.current_object_id += 1
         
     def add_video(self, video_path, step_size=1):
-        self.inference_state = self.predictor.init_state(frames=self.load_video(video_path, step_size))
+        self.inference_state = self.predictor.init_state(frames=self.load_data(video_path, step_size))
         self.predictor.reset_state(self.inference_state)
         self.video_data.set_video_length(len(self.inference_state["images"]))
         print(f"Loaded video with {len(self.inference_state['images'])} frames")
+        
+    def load_tif_dataset(self, tif_path, step_size=1):
+        with tifffile.TiffFile(tif_path) as tif:
+            frames = tif.asarray()
+        frames = [cv2.resize(frames[idx], (1024, 1024)) for idx in range(0, len(frames), step_size if step_size > 0 else 1)]
+        return np.array(frames)
+    
+    def load_data(self, data_path, step_size=1):
+        if data_path.endswith(".tif"):
+            return self.load_tif_dataset(data_path, step_size)
+        elif data_path.endswith(".mp4"):
+            return self.load_video(data_path, step_size)
+        else:
+            raise ValueError(f"Unsupported file extension: {data_path}")
+        
 
     def load_video(self, video_path, step_size=1):
         video = cv2.VideoCapture(video_path)

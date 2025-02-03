@@ -8,11 +8,11 @@ from segment_anything_2_ui.configs.config import UiConfig
 from segment_anything_2_ui.ui.image_label import ImageLabel
 from segment_anything_2_ui.ui.image_pixmap import ImagePixmap
 from segment_anything_2_ui.engine.video_prediction import VideoPredictionData
-    
+from segment_anything_2_ui.utils.structures import TifDataset
 
 class MediaPlayer(QWidget):
 
-    def __init__(self, parent, video: cv2.VideoCapture, prediction_data: VideoPredictionData, config: UiConfig):
+    def __init__(self, parent, video: cv2.VideoCapture | TifDataset, prediction_data: VideoPredictionData, config: UiConfig):
         super().__init__()
         self.parent = parent
         self.prediction_data = prediction_data

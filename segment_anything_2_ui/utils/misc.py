@@ -18,8 +18,13 @@ def load_from_numpy_frames(
     img_std = torch.tensor(img_std, dtype=torch.float32)[:, None, None].to(compute_device)
     if frames.dtype == np.uint8:
         frames = frames / 255.0
+    
+    frames = torch.from_numpy(frames)
+    
+    if len(frames.shape) == 3:
+        frames = frames.unsqueeze(-1).repeat(1, 1 , 1, 3)
     print(frames.shape)
-    frames = torch.from_numpy(frames).permute(0, 3, 1, 2)
+    frames = frames.permute(0, 3, 1, 2)
     if not offload_video_to_cpu:
         frames = frames.to(compute_device, non_blocking=True)
     print(frames.shape)

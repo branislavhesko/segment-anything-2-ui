@@ -8,3 +8,4 @@ omegaconf
 tqdm
 pyside6
 sam2
+tifffile
