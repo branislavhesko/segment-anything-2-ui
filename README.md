@@ -10,11 +10,6 @@ Please use this repository for image only annotation.
 
 ![GUI](segment_anything_2_ui/assets/example.png)
 
-
-Example video:
-
-[![Watch the video]([https://github.com/branislavhesko/segment-anything-2-ui/blob/c7bc739fd50a7437f6953d35957f98047561a03c/segment_anything_2_ui/assets/example.png](https://github.com/branislavhesko/segment-anything-2-ui/blob/c7bc739fd50a7437f6953d35957f98047561a03c/segment_anything_2_ui/assets/example.png))](https://github.com/branislavhesko/segment-anything-2-ui/blob/c7bc739fd50a7437f6953d35957f98047561a03c/segment_anything_2_ui/assets/example.mp4)
-
 ## Features
 
 - **Video Playback**: Play, pause, and navigate through video frames.
