@@ -13,11 +13,7 @@ Please use this repository for image only annotation.
 
 Example video:
 
-<video width="320" height="240" controls>
-   <source src="segment_anything_2_ui/assets/example.mp4" type="video/mp4">
-   Your browser does not support the video tag.
-</video>
-
+[![Watch the video]([https://github.com/branislavhesko/segment-anything-2-ui/blob/c7bc739fd50a7437f6953d35957f98047561a03c/segment_anything_2_ui/assets/example.png](https://github.com/branislavhesko/segment-anything-2-ui/blob/c7bc739fd50a7437f6953d35957f98047561a03c/segment_anything_2_ui/assets/example.png))](https://github.com/branislavhesko/segment-anything-2-ui/blob/c7bc739fd50a7437f6953d35957f98047561a03c/segment_anything_2_ui/assets/example.mp4)
 
 ## Features
 
