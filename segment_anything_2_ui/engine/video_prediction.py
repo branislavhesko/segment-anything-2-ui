@@ -53,12 +53,12 @@ class VideoPredictionData:
         for prediction in self.predictions:
             if prediction is not None:
                 if save_raw:
-                    output[f"frame_{prediction.frame_idx}"] = torch.from_numpy(prediction.mask_logits).to(torch.float32)
+                    output[f"frame_{prediction.frame_idx:05d}"] = torch.from_numpy(prediction.mask_logits).to(torch.float32)
                 else:
                     mask_logits = torch.from_numpy(prediction.mask_logits > 0)
                     mask_logits = torch.cat([
                         torch.zeros(1, *mask_logits.shape[1:]), mask_logits], dim=0).argmax(dim=0).to(torch.uint8)
-                    output[f"frame_{prediction.frame_idx}"] = mask_logits
+                    output[f"frame_{prediction.frame_idx:05d}"] = mask_logits
         return output
 
 

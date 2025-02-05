@@ -11,6 +11,14 @@ Please use this repository for image only annotation.
 ![GUI](segment_anything_2_ui/assets/example.png)
 
 
+Example video:
+
+<video width="320" height="240" controls>
+   <source src="segment_anything_2_ui/assets/example.mp4" type="video/mp4">
+   Your browser does not support the video tag.
+</video>
+
+
 ## Features
 
 - **Video Playback**: Play, pause, and navigate through video frames.
