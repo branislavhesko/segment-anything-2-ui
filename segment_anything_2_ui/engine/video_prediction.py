@@ -176,7 +176,7 @@ def build_sam2_video_predictor(
 class VideoPrediction:
     
     def __init__(self, model_cfg, checkpoint_path, config_path, max_frames: int):
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
         self.predictor = build_sam2_video_predictor(model_cfg, checkpoint_path, device=device, config_path=config_path)
         self.inference_state = None
         self.is_propagated: bool = False
@@ -202,7 +202,7 @@ class VideoPrediction:
     def load_data(self, data_path, step_size=1):
         if data_path.endswith(".tif"):
             return self.load_tif_dataset(data_path, step_size)
-        elif data_path.endswith(".mp4"):
+        elif data_path.endswith(".mp4") or data_path.endswith(".avi") or data_path.endswith(".mkv"):
             return self.load_video(data_path, step_size)
         else:
             raise ValueError(f"Unsupported file extension: {data_path}")

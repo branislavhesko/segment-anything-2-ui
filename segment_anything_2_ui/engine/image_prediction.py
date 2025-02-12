@@ -40,7 +40,7 @@ def get_device():
 class ImagePrediction:
     
     def __init__(self, checkpooint_path, model_cfg):
-        self.device = device
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.sam2_model = build_sam2(model_cfg, checkpooint_path, device=self.device)
         self.predictor = SAM2ImagePredictor(self.sam2_model)
         

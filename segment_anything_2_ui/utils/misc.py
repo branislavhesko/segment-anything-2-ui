@@ -19,7 +19,7 @@ def load_from_numpy_frames(
     if frames.dtype == np.uint8:
         frames = frames / 255.0
     
-    frames = torch.from_numpy(frames)
+    frames = torch.from_numpy(frames).float()
     
     if len(frames.shape) == 3:
         frames = frames.unsqueeze(-1).repeat(1, 1 , 1, 3)

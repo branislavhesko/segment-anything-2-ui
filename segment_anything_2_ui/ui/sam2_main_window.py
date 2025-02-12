@@ -50,7 +50,7 @@ class PyVideoPlayer(QWidget):
         )
         self.media_player: MediaPlayer = None
         # Set up the layout
-        self.media_path = "/home/brani/DATA/DATASETS/snemi/image/test-input.tif"
+        self.media_path = "video.avi"
         self.inference_saver = InferenceSaver(self.config)
         self.main_layout.addWidget(self.settings_widget)
         self.main_layout.setContentsMargins(10, 0, 10, 0)
@@ -59,6 +59,7 @@ class PyVideoPlayer(QWidget):
         self.set_media(self.media_path)
 
     def set_media(self, fileName):
+        self.media_path = fileName
         if self.media_player:
             self.video_layout.removeWidget(self.media_player)
         if self.thumbnail_widget:
