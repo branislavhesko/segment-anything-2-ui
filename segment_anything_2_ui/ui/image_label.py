@@ -13,6 +13,7 @@ from segment_anything_2_ui.engine.video_prediction import VideoPredictionData, S
 from segment_anything_2_ui.ui.image_pixmap import ImagePixmap
 from segment_anything_2_ui.utils.shape import BoundingBox, Polygon
 from segment_anything_2_ui.utils.structures import PaintType
+from segment_anything_2_ui.utils.keybindings import Keybindings
 
 
 COLORS = [
@@ -79,6 +80,7 @@ class ImageLabel(QtWidgets.QLabel):
     def __init__(self, parent, prediction_data: VideoPredictionData, config: UiConfig | None = None):
         super().__init__()
         self.parent = parent
+        self.keybindings = Keybindings()
         self.prediction_data = prediction_data
         self.visualization_mode = VisualizationMode()
         self.actual_image = np.empty((0, 0, 3))
@@ -223,13 +225,18 @@ class ImageLabel(QtWidgets.QLabel):
         self.update()
 
     def keyPressEvent(self, ev: PySide6.QtGui.QKeyEvent) -> None:
-        print(ev.key())
         if self._paint_type == PaintType.MASK_PICKER and ev.key() == QtCore.Qt.Key.Key_D and len(self.parent().annotator.masks):
             print("Deleting mask")
-            self.parent().annotator.masks.pop(self.parent().annotator.masks.mask_id)
-            self.parent().annotator.masks.mask_id = -1
-            self.parent().annotator.last_mask = None
-            self.parent().update(self.parent().annotator.merge_image_visualization())
+            self.parent.annotator.masks.pop(self.parent.annotator.masks.mask_id)
+            self.parent.annotator.masks.mask_id = -1
+            self.parent.annotator.last_mask = None
+            self.parent.update(self.parent.annotator.merge_image_visualization())
+        
+        if chr(ev.key()) == self.keybindings.play_video:
+            self.parent.on_play_button()
+
+        super().keyPressEvent(ev)
+
             
     def make_visualization(self, frame: np.ndarray, frame_idx: int):
         prediction = self.prediction_data.get_prediction(frame_idx)

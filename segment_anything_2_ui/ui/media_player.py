@@ -9,6 +9,7 @@ from segment_anything_2_ui.ui.image_label import ImageLabel
 from segment_anything_2_ui.ui.image_pixmap import ImagePixmap
 from segment_anything_2_ui.engine.video_prediction import VideoPredictionData
 from segment_anything_2_ui.utils.structures import TifDataset
+from segment_anything_2_ui.utils.keybindings import Keybindings
 
 class MediaPlayer(QWidget):
 
@@ -26,9 +27,10 @@ class MediaPlayer(QWidget):
         self.position_slider = QSlider(orientation=Qt.Orientation.Horizontal)
         self.position_slider.setRange(0, self.video_length if self.step_size == 0 else self.video_length // self.step_size)
         self.position_slider.valueChanged.connect(self.on_slider_moved)
-        self.play_button = QPushButton("Play")
+        self.keybindings = Keybindings()
+        self.play_button = QPushButton(f"Play [{self.keybindings.play_video}]")
         self.play_button.clicked.connect(self.on_play_button)
-        self.play_button.setShortcut("Space")
+        self.play_button.setShortcut(self.keybindings.play_video)
         self.timer = QTimer()
         self.timer.timeout.connect(self.next_frame)
         
@@ -61,19 +63,19 @@ class MediaPlayer(QWidget):
         self.position_slider.setValue(frame_number)
         
     def on_play_button(self):
-        if self.play_button.text() == "Play":
+        if self.play_button.text() == f"Play [{self.keybindings.play_video}]":
             self.play()
         else:
             self.pause()
         
     def play(self):
         self.timer.start(1000 / self.fps)
-        self.play_button.setText("Pause")
+        self.play_button.setText(f"Pause [{self.keybindings.play_video}]")
         
     def pause(self):
         self.timer.stop()
-        self.play_button.setText("Play")
-        
+        self.play_button.setText(f"Play [{self.keybindings.play_video}]")
+
     def next_frame(self):
         self.increase_by_step_size(self.current_frame)
         ret, frame = self.video.read()

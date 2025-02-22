@@ -1,20 +1,21 @@
 # Segment Anything 2 UI
 
+![GUI](segment_anything_2_ui/assets/example.png)
 
 
-https://github.com/user-attachments/assets/a7ac9558-e604-4c93-bf57-e6270ef0deb7
 
 
-
-Segment Anything 2 UI is a graphical user interface for video annotation, built using PySide6. It is inspired by Meta's demo web page and allows users to annotate videos with various tools such as bounding boxes, masks, and points.
+Segment Anything 2 UI is a graphical user interface for video annotation, built using PySide6. It is inspired by Meta's demo web page and allows users to annotate videos with various tools such as bounding boxes, masks, and points. This tool currently supports video files and tif images for 3D segmentation.
 
 This UI wraps the [Segment Anything 2](https://github.com/facebookresearch/sam2) model.
 
 Please use this repository for image only annotation.
 [Segment anything UI](https://github.com/branislavhesko/segment-anything-ui)
 
+# Example output
 
-![GUI](segment_anything_2_ui/assets/example.png)
+https://github.com/user-attachments/assets/a7ac9558-e604-4c93-bf57-e6270ef0deb7
+
 
 ## Features
 
@@ -100,4 +101,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 - Inspired by Meta's demo web page.
 - Built with PySide6 for a seamless user interface experience.
 - [Segment Anything 2](https://github.com/facebookresearch/sam2) model.
-- Used for annotation of videos or images.
+- Used for annotation of videos.

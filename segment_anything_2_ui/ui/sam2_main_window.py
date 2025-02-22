@@ -11,6 +11,7 @@ from segment_anything_2_ui.engine.video_prediction import VideoPrediction
 from segment_anything_2_ui.ui.media_player import MediaPlayer
 from segment_anything_2_ui.ui.settings_widget import SettingsWidget
 from segment_anything_2_ui.utils.structures import build_video_capture
+from segment_anything_2_ui.utils.keybindings import Keybindings
 
 
 # TODO: add visualization to the thumbnail
@@ -28,6 +29,7 @@ class ThumbnailLabel(QLabel):
 class PyVideoPlayer(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.keybindings = Keybindings()
         self.setWindowTitle("Segment Anything 2 UI")
         self.move(100, 100)
         self.config = UiConfig()
@@ -61,6 +63,7 @@ class PyVideoPlayer(QWidget):
     def set_media(self, fileName):
         self.media_path = fileName
         if self.media_player:
+            self.media_player.deleteLater()
             self.video_layout.removeWidget(self.media_player)
         if self.thumbnail_widget:
             self.video_layout.removeWidget(self.thumbnail_widget)
@@ -109,7 +112,7 @@ class PyVideoPlayer(QWidget):
 
     def handle_error(self):
         print("Error: " + self.media_player.errorString())
-        
+
     @property
     def video_data(self):
         return self.video_predictor.video_data

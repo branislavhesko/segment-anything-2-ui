@@ -1,23 +1,29 @@
-from enum import Enum
 from functools import partial
 
 from PySide6.QtWidgets import QCheckBox, QComboBox, QFileDialog, QHBoxLayout, QPushButton, QVBoxLayout, QWidget
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QIntValidator
 from segment_anything_2_ui.utils.structures import PaintType
+from segment_anything_2_ui.utils.keybindings import Keybindings
 
 
 class ObjectPicker(QComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.parent = parent
-        self.setEditable(True)
+        self.setEditable(False)
         self.setValidator(QIntValidator())
-    
+        self._items = {}
+
     def add_object(self, object_id: int):
-        self.addItem(str(object_id))
+        self._items[object_id] = f"Current object {object_id}"
+        self.addItem(self._items[object_id])
     
     def get_object(self):
-        return int(self.currentText())
+        return int(self.currentText().split(" ")[-1])
+    
+    def set_current_object(self, object_id: int):
+        self.setCurrentText(self._items[object_id])
 
 
 class SettingsWidget(QWidget):
@@ -26,42 +32,53 @@ class SettingsWidget(QWidget):
         self.parent = parent
         self.setWindowTitle("Settings")
         self.setGeometry(100, 100, 300, 200)
-
+        self.keybindings = Keybindings()
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.load_video = QPushButton("Load video")
         self.load_video.clicked.connect(self.load_video_clicked)
-        self.layout.addWidget(self.load_video)
+        self.load_video.setShortcut(self.keybindings.load_video)
         self.object_picker = ObjectPicker(self)
         self.object_picker.add_object(0)
-        self.layout.addWidget(self.object_picker)
-        self.add_annotation = QPushButton("Add annotation")
+        self.object_picker.currentTextChanged.connect(self.on_object_picker_changed)
+        self.add_annotation = QPushButton(f"Add annotation [{self.keybindings.add_annotation}]")
         self.add_annotation.clicked.connect(self.add_annotation_clicked)
-        self.layout.addWidget(self.add_annotation)
-        self.box_annotation = QPushButton("Box annotation")
-        self.mask_annotation = QPushButton("Mask annotation")
-        self.point_annotation = QPushButton("Point annotation")
-        self.cancel_annotation = QPushButton("Cancel annotation")
+        self.add_annotation.setShortcut(self.keybindings.add_annotation)
+        self.box_annotation = QPushButton(f"Box annotation [{self.keybindings.box_annotation}]")
+        self.box_annotation.setShortcut(self.keybindings.box_annotation)
+        self.mask_annotation = QPushButton(f"Mask annotation [{self.keybindings.mask_annotation}]")
+        self.mask_annotation.setShortcut(self.keybindings.mask_annotation)
+        self.point_annotation = QPushButton(f"Point annotation [{self.keybindings.point_annotation}]")
+        self.point_annotation.setShortcut(self.keybindings.point_annotation)
+        self.cancel_annotation = QPushButton(f"Cancel annotation [{self.keybindings.cancel_annotation}]")
         self.cancel_annotation.clicked.connect(self.cancel_annotation_clicked)
-        self.mask_picker = QPushButton("Mask picker")
+        self.cancel_annotation.setShortcut(self.keybindings.cancel_annotation)
+        self.mask_picker = QPushButton(f"Mask picker [{self.keybindings.mask_picker}]")
         self.mask_picker.clicked.connect(self.mask_picker_clicked)
-        self.visualization_button = QPushButton("Visualize image")
-        self.propagate = QPushButton("Propagate")
-        self.propagate_reverse = QPushButton("Propagate reverse")
-        self.propagate.setShortcut("F4")
+        self.mask_picker.setShortcut(self.keybindings.mask_picker)
+        self.visualization_button = QPushButton(f"Visualize image [{self.keybindings.visualize_image}]")
+        self.visualization_button.setShortcut(self.keybindings.visualize_image)
+        self.propagate = QPushButton(f"Propagate [{self.keybindings.propagate}]")
+        self.propagate.setShortcut(self.keybindings.propagate)
         self.propagate.clicked.connect(self.propagate_clicked)
-        self.propagate_reverse.setShortcut("F5")
+        self.propagate_reverse = QPushButton(f"Propagate reverse [{self.keybindings.propagate_reverse}]")
+        self.propagate_reverse.setShortcut(self.keybindings.propagate_reverse)
         self.propagate_reverse.clicked.connect(self.propagate_reverse_clicked)
-        self.clear_annotations = QPushButton("Clear annotations")
+        self.clear_annotations = QPushButton(f"Clear annotations [{self.keybindings.clear_annotations}]")
+        self.clear_annotations.setShortcut(self.keybindings.clear_annotations)
         self.box_annotation.clicked.connect(partial(self.set_annotation_type, PaintType.BOX))
         self.mask_annotation.clicked.connect(partial(self.set_annotation_type, PaintType.MASK))
         self.point_annotation.clicked.connect(partial(self.set_annotation_type, PaintType.POINT))
         self.clear_annotations.clicked.connect(self.clear_annotations_clicked)
         self.visualization_button.clicked.connect(self.visualitation_clicked)
-        self.save_inference = QPushButton("Save inference")
+        self.save_inference = QPushButton(f"Save inference [{self.keybindings.save_inference}]")
+        self.save_inference.setShortcut(self.keybindings.save_inference)
         self.save_inference.clicked.connect(self.save_inference_clicked)
         self.save_raw = QCheckBox("Save raw")
         self.save_raw.setChecked(False)
+        self.layout.addWidget(self.load_video)
+        self.layout.addWidget(self.object_picker)
+        self.layout.addWidget(self.add_annotation)
         self.layout.addWidget(self.box_annotation)
         self.layout.addWidget(self.mask_annotation)
         self.layout.addWidget(self.point_annotation)
@@ -77,6 +94,9 @@ class SettingsWidget(QWidget):
         self.layout.addLayout(h_layout)
         self.annotation_type = PaintType.POINT
         self.layout.addStretch(1)
+
+    def on_object_picker_changed(self):
+        self.parent.video_predictor.current_object_id = self.object_picker.get_object()
         
     def cancel_annotation_clicked(self):
         self.parent.media_player.image_label.clear()
@@ -100,9 +120,10 @@ class SettingsWidget(QWidget):
             
     def add_annotation_clicked(self):
         print("Adding new object, new object id: ", self.parent.video_predictor.current_object_id + 1)
-        self.parent.video_predictor.add_new_object()
-        self.parent.settings_widget.object_picker.add_object(self.parent.video_predictor.current_object_id)
-    
+        object_id = self.parent.video_predictor.add_new_object()
+        self.parent.settings_widget.object_picker.add_object(object_id)
+        self.parent.settings_widget.object_picker.set_current_object(object_id)
+
     def propagate_clicked(self):
         self.parent.video_predictor.propagate()
         
@@ -126,3 +147,8 @@ class SettingsWidget(QWidget):
             return selected_video
         except IndexError:
             return None
+
+    def keyPressEvent(self, event):
+        if chr(event.key()) == self.keybindings.play_video:
+            self.parent.media_player.on_play_button()
+        super().keyPressEvent(event)

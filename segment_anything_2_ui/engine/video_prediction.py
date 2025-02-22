@@ -186,6 +186,7 @@ class VideoPrediction:
         
     def add_new_object(self):
         self.current_object_id += 1
+        return self.current_object_id
         
     def add_video(self, video_path, step_size=1):
         self.inference_state = self.predictor.init_state(frames=self.load_data(video_path, step_size))
